@@ -48,7 +48,7 @@ footer{max-width:1440px;margin:0 auto;padding:0 26px 25px;color:#7783a4;font-siz
 <header><div class="logo">Slide<span>AInel</span><span class="tag">PERSONAL STUDIO</span></div><div class="row" style="max-width:340px"><button class="secondary" id="newBtn">Новый проект</button><button id="exportTop">Экспорт PPTX ↗</button></div></header>
 <main>
 <section class="panel">
-<h1>Создай презентацию</h1><p class="sub">Опиши задачу — подготовим основу, которую можно редактировать.</p>
+<h1>Создай презентацию</h1><p class="sub">Опиши задачу — ИИ подготовит содержание слайдов, которое можно редактировать.</p>
 <label for="topic">Тема презентации</label><textarea id="topic" placeholder="Например: Синтез двумерного дисульфида вольфрама методом MBE"></textarea>
 <label for="audience">Для кого презентация?</label><select id="audience"><option>Университет / научная конференция</option><option>Школьный урок</option><option>Защита проекта</option><option>Деловая презентация</option><option>Общее выступление</option></select>
 <div class="row"><div><label for="count">Количество слайдов</label><select id="count"><option>5</option><option selected>8</option><option>10</option><option>12</option><option>15</option></select></div><div><label for="language">Язык</label><select id="language"><option>Русский</option><option>Қазақша</option><option>English</option></select></div></div>
@@ -72,7 +72,7 @@ footer{max-width:1440px;margin:0 auto;padding:0 26px 25px;color:#7783a4;font-siz
 </div></div>
 </section>
 </main>
-<footer>SlideAInel MVP · Демонстрационная генерация структуры работает локально. Для реального ИИ, чтения PDF/DOCX и безопасного хранения файлов потребуется подключение серверной части и API-ключа.</footer>
+<footer>SlideAInel MVP · ИИ-генерация работает через Cloudflare Workers AI. Загруженные документы пока не анализируются.</footer>
 <script>
 const $=id=>document.getElementById(id);
 let slides=[],active=0,style='editorial',imageUrls={},files=[];
@@ -105,7 +105,7 @@ function makeSlides(topic,n){
  let t=topic.trim()||'Новая презентация';
  let out=[];for(let i=0;i<n;i++){let x=templates[i%templates.length];out.push({title:i===0?t:x[0],eyebrow:i===0?'ПРЕЗЕНТАЦИЯ':x[1],body:i===0?`Подготовлено в SlideAInel\n${$('audience').value}`:x[2]+'\n\nДобавьте факты, данные и иллюстрации из ваших материалов.'})}return out
 }
-$('generate').onclick=()=>{slides=makeSlides($('topic').value,+$('count').value);active=0;imageUrls={};render();save();setStatus('Основа презентации создана. Проверь и отредактируй содержание каждого слайда.')};
+$('generate').onclick=async()=>{const topic=$('topic').value.trim();if(!topic){setStatus('Сначала введи тему презентации.');return;}const btn=$('generate');btn.disabled=true;btn.textContent='⏳ ИИ создаёт презентацию…';setStatus('Отправляем запрос ИИ. Обычно это занимает несколько секунд.');try{const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic,audience:$('audience').value,count:+$('count').value,language:$('language').value,style,notes:$('notes').value})});const data=await res.json();if(!res.ok)throw new Error(data.error||'Ошибка генерации');if(!Array.isArray(data.slides)||!data.slides.length)throw new Error('ИИ вернул пустую презентацию. Попробуй ещё раз.');slides=data.slides.map((s,i)=>({title:String(s.title||'Слайд '+(i+1)),eyebrow:String(s.eyebrow||'РАЗДЕЛ'),body:String(s.body||''),layout:String(s.layout||'content')}));active=0;imageUrls={};render();save();setStatus('ИИ подготовил '+slides.length+' слайдов. Проверь факты и отредактируй при необходимости.');}catch(e){setStatus('Не удалось создать презентацию: '+e.message+'. Проверь Workers AI binding в Cloudflare.');}finally{btn.disabled=false;btn.textContent='✨ Сгенерировать';}};
 $('sample').onclick=()=>{$('topic').value='Синтез двумерного дисульфида вольфрама методом молекулярно-лучевой эпитаксии';$('count').value='8';$('generate').click()};
 $('addSlide').onclick=()=>{slides.splice(active+1,0,{title:'Новый слайд',eyebrow:'ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ',body:'Добавьте содержание этого слайда.'});active++;render();save()};
 $('deleteSlide').onclick=()=>{if(slides.length<2)return setStatus('В презентации должен остаться хотя бы один слайд.');slides.splice(active,1);delete imageUrls[active];active=Math.max(0,active-1);render();save()};
