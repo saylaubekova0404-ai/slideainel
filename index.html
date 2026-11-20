@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SlideAInel — AI Presentation Studio</title>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+:root{--bg:#0c1020;--panel:#141a2d;--panel2:#1b2340;--line:#2a3455;--text:#f4f6ff;--muted:#9ca8c8;--accent:#8b7cff;--accent2:#55d6be;--danger:#ff7185}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#20234c 0,#0c1020 38%);color:var(--text);font:15px/1.45 Inter,system-ui,Arial,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:11px 15px;background:var(--accent);color:white;font-weight:700}button.secondary{background:#283251;color:#e8ebff;border:1px solid #39466c}button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}button:disabled{opacity:.5;cursor:not-allowed}
+header{height:70px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 26px;background:#0d1222dd;position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
+.logo{font-size:22px;font-weight:900;letter-spacing:-.8px}.logo span{color:var(--accent2)}.tag{font-size:11px;color:var(--accent2);border:1px solid #28695e;padding:4px 8px;border-radius:20px;margin-left:9px}
+main{max-width:1440px;margin:auto;padding:26px;display:grid;grid-template-columns:350px 1fr;gap:22px}
+.panel{background:linear-gradient(160deg,#171e34,#111729);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 18px 60px #0003}
+h1{font-size:26px;margin:0 0 5px}h2{font-size:17px;margin:0 0 14px}.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+label{display:block;color:#c4cbea;font-size:12px;font-weight:700;margin:15px 0 7px}
+input,textarea,select{width:100%;background:#0d1426;border:1px solid #303b5c;color:var(--text);border-radius:11px;padding:12px;outline:none}
+textarea{min-height:100px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+.row{display:flex;gap:9px}.row>*{flex:1}.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.drop{border:1px dashed #58658c;border-radius:13px;padding:17px;text-align:center;color:var(--muted);background:#10182b}.drop strong{display:block;color:#e5e9ff;margin-bottom:4px}
+.stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.style{background:#10172a;border:1px solid #34405f;padding:10px;border-radius:12px;text-align:left;color:#dce2ff;font-size:12px}.style.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:#252044}
+.actions{display:flex;gap:9px;margin-top:17px}.actions button{flex:1}
+.workspace{min-width:0}.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}.toolbar .muted{color:var(--muted);font-size:13px}
+.editor{display:grid;grid-template-columns:180px 1fr;gap:15px}
+.thumbs{display:flex;flex-direction:column;gap:10px;max-height:650px;overflow:auto}
+.thumb{background:#11182a;border:1px solid var(--line);padding:8px;border-radius:12px;color:#cbd4f2;text-align:left}
+.thumb.active{border-color:var(--accent);background:#242044}.mini{height:78px;border-radius:7px;margin-bottom:7px;padding:9px;overflow:hidden;background:#f2f0eb;color:#171717;font-size:9px}
+.mini b{display:block;font-size:12px;margin-bottom:4px}.mini small{font-size:7px}
+.slidearea{background:#080d19;border:1px solid var(--line);border-radius:17px;padding:18px;min-height:500px;display:flex;align-items:center;justify-content:center}
+.slide{width:min(100%,900px);aspect-ratio:16/9;background:#f3f1ec;color:#151515;border-radius:7px;box-shadow:0 20px 70px #0008;position:relative;padding:7%;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.slide .eyebrow{font-size:clamp(9px,1.1vw,13px);letter-spacing:2px;text-transform:uppercase;color:#6a6a6a;margin-bottom:3%}
+.slide h2{font-size:clamp(23px,3.6vw,48px);line-height:1.04;max-width:90%;margin:0 0 3%;font-weight:900;letter-spacing:-1.5px}
+.slide p{font-size:clamp(12px,1.5vw,18px);line-height:1.5;max-width:85%;white-space:pre-wrap}
+.slide .number{position:absolute;right:5%;bottom:5%;font-size:11px;color:#777}
+.slide .accentline{width:70px;height:5px;background:#f07845;margin-bottom:4%}
+.slide.dark{background:#151923;color:#f6f3ec}.slide.dark .eyebrow,.slide.dark .number{color:#b3b6c2}.slide.dark p{color:#d7d9df}
+.slide.violet{background:linear-gradient(135deg,#211b49,#5545a2);color:white}.slide.violet .eyebrow,.slide.violet .number{color:#d7d0ff}
+.slide.academic{background:#f8fafc;color:#17233b;border-left:12px solid #2463a6}.slide.academic .accentline{background:#2463a6}
+.slide .image{position:absolute;right:5%;top:15%;width:27%;height:65%;object-fit:cover;border-radius:5px;opacity:.92}
+.slide.hasimage h2,.slide.hasimage p{max-width:62%}
+.editpanel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.editpanel label{margin-top:0}
+.status{color:var(--accent2);font-size:12px;min-height:18px;margin-top:8px}
+footer{max-width:1440px;margin:0 auto;padding:0 26px 25px;color:#7783a4;font-size:11px}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:14px}.editor{grid-template-columns:1fr}.thumbs{flex-direction:row;max-height:none;overflow-x:auto}.thumb{min-width:125px}.slidearea{min-height:260px;padding:9px}.panel{padding:16px}header{padding:0 15px}.editpanel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="logo">Slide<span>AInel</span><span class="tag">PERSONAL STUDIO</span></div><div class="row" style="max-width:340px"><button class="secondary" id="newBtn">Новый проект</button><button id="exportTop">Экспорт PPTX ↗</button></div></header>
+<main>
+<section class="panel">
+<h1>Создай презентацию</h1><p class="sub">Опиши задачу — подготовим основу, которую можно редактировать.</p>
+<label for="topic">Тема презентации</label><textarea id="topic" placeholder="Например: Синтез двумерного дисульфида вольфрама методом MBE"></textarea>
+<label for="audience">Для кого презентация?</label><select id="audience"><option>Университет / научная конференция</option><option>Школьный урок</option><option>Защита проекта</option><option>Деловая презентация</option><option>Общее выступление</option></select>
+<div class="row"><div><label for="count">Количество слайдов</label><select id="count"><option>5</option><option selected>8</option><option>10</option><option>12</option><option>15</option></select></div><div><label for="language">Язык</label><select id="language"><option>Русский</option><option>Қазақша</option><option>English</option></select></div></div>
+<label>Стиль оформления</label><div class="stylegrid">
+<button class="style active" data-style="editorial">Журнальный</button><button class="style" data-style="academic">Научный</button><button class="style" data-style="dark">Тёмный premium</button><button class="style" data-style="violet">Креативный</button>
+</div>
+<label>Материалы (необязательно)</label><div class="drop" id="drop"><strong>＋ Добавить файлы</strong>PDF, DOCX, PPTX, изображения и текст<br><span class="hint">В этой версии файлы прикрепляются к проекту локально; автоматическое извлечение текста будет добавлено при подключении backend.</span><input id="files" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.png,.jpg,.jpeg,.webp" style="margin-top:12px;font-size:11px"></div><div id="filelist" class="hint"></div>
+<label for="notes">Дополнительные пожелания</label><input id="notes" placeholder="Например: минимум текста, больше схем и иллюстраций">
+<div class="actions"><button id="generate">✨ Сгенерировать</button><button class="secondary" id="sample">Пример</button></div>
+<div class="status" id="status">Готов к работе. Проект хранится в этом браузере.</div>
+</section>
+<section class="workspace">
+<div class="toolbar"><div><h2 style="margin:0">Рабочая область</h2><span class="muted" id="slideCount">8 слайдов · выберите слайд для редактирования</span></div><div class="row" style="max-width:300px"><button class="secondary" id="addSlide">＋ Слайд</button><button class="secondary" id="deleteSlide">Удалить</button></div></div>
+<div class="editor"><div class="thumbs" id="thumbs"></div><div>
+<div class="slidearea"><div class="slide" id="slidePreview"><div class="accentline"></div><div class="eyebrow">SLIDE AINEL · PRESENTATION</div><h2>Твоя следующая презентация</h2><p>Введи тему слева и нажми «Сгенерировать».</p><span class="number">01</span></div></div>
+<div class="editpanel">
+<div><label for="editTitle">Заголовок слайда</label><input id="editTitle"></div><div><label for="editEyebrow">Надпись сверху</label><input id="editEyebrow"></div>
+<div style="grid-column:1/-1"><label for="editBody">Текст слайда</label><textarea id="editBody" style="min-height:80px"></textarea></div>
+<div><label for="imageInput">Изображение для слайда</label><input id="imageInput" type="file" accept="image/*"></div><div style="display:flex;align-items:end"><button class="secondary" id="removeImage" style="width:100%">Убрать изображение</button></div>
+</div>
+</div></div>
+</section>
+</main>
+<footer>SlideAInel MVP · Демонстрационная генерация структуры работает локально. Для реального ИИ, чтения PDF/DOCX и безопасного хранения файлов потребуется подключение серверной части и API-ключа.</footer>
+<script>
+const $=id=>document.getElementById(id);
+let slides=[],active=0,style='editorial',imageUrls={},files=[];
+const templates=[
+['Титульный слайд','ТЕМА ИССЛЕДОВАНИЯ','Краткое и выразительное название презентации.'],
+['Актуальность','ПОЧЕМУ ЭТО ВАЖНО','Опишите научную или практическую проблему, которую рассматривает работа.'],
+['Цель и задачи','ИССЛЕДОВАТЕЛЬСКИЙ ФОКУС','Сформулируйте цель исследования и 3–4 конкретные задачи.'],
+['Теоретическая основа','КЛЮЧЕВЫЕ ПОНЯТИЯ','Раскройте основные понятия, свойства материала и научный контекст.'],
+['Методы исследования','ЭКСПЕРИМЕНТАЛЬНЫЙ ПОДХОД','Опишите метод синтеза, оборудование, параметры процесса и методы анализа.'],
+['Результаты','ОСНОВНЫЕ НАБЛЮДЕНИЯ','Представьте ключевые результаты, графики, микрофотографии или таблицы.'],
+['Обсуждение','ИНТЕРПРЕТАЦИЯ','Объясните, как условия эксперимента влияют на структуру и свойства.'],
+['Выводы','ИТОГИ РАБОТЫ','Сформулируйте главные выводы и возможные направления дальнейшей работы.'],
+['Перспективы','ЧТО ДАЛЬШЕ','Укажите практическое применение и следующие этапы исследования.'],
+['Источники','ЛИТЕРАТУРА','Добавьте научные статьи, книги и другие использованные источники.']
+];
+function setStatus(t){$('status').textContent=t}
+function render(){
+ $('slideCount').textContent=`${slides.length} слайдов · слайд ${active+1}`;
+ $('thumbs').innerHTML='';
+ slides.forEach((s,i)=>{let b=document.createElement('button');b.className='thumb'+(i===active?' active':'');b.innerHTML=`<div class="mini"><b>${esc(s.title||'Без заголовка')}</b><small>${esc((s.body||'').slice(0,70))}</small></div>${String(i+1).padStart(2,'0')} · ${esc(s.title||'Слайд')}`;b.onclick=()=>{active=i;render()};$('thumbs').appendChild(b)});
+ let s=slides[active];if(!s)return;
+ $('editTitle').value=s.title;$('editEyebrow').value=s.eyebrow;$('editBody').value=s.body;
+ let p=$('slidePreview');p.className='slide '+(style==='editorial'?'':style)+(imageUrls[active]?' hasimage':'');
+ p.innerHTML=`<div class="accentline"></div><div class="eyebrow">${esc(s.eyebrow)}</div><h2>${esc(s.title)}</h2><p>${esc(s.body)}</p>${imageUrls[active]?`<img class="image" src="${imageUrls[active]}">`:''}<span class="number">${String(active+1).padStart(2,'0')}</span>`;
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function update(){if(!slides[active])return;slides[active].title=$('editTitle').value;slides[active].eyebrow=$('editEyebrow').value;slides[active].body=$('editBody').value;render();save()}
+['editTitle','editEyebrow','editBody'].forEach(id=>$(id).addEventListener('input',update));
+function makeSlides(topic,n){
+ let t=topic.trim()||'Новая презентация';
+ let out=[];for(let i=0;i<n;i++){let x=templates[i%templates.length];out.push({title:i===0?t:x[0],eyebrow:i===0?'ПРЕЗЕНТАЦИЯ':x[1],body:i===0?`Подготовлено в SlideAInel\n${$('audience').value}`:x[2]+'\n\nДобавьте факты, данные и иллюстрации из ваших материалов.'})}return out
+}
+$('generate').onclick=()=>{slides=makeSlides($('topic').value,+$('count').value);active=0;imageUrls={};render();save();setStatus('Основа презентации создана. Проверь и отредактируй содержание каждого слайда.')};
+$('sample').onclick=()=>{$('topic').value='Синтез двумерного дисульфида вольфрама методом молекулярно-лучевой эпитаксии';$('count').value='8';$('generate').click()};
+$('addSlide').onclick=()=>{slides.splice(active+1,0,{title:'Новый слайд',eyebrow:'ДОПОЛНИТЕЛЬНЫЙ РАЗДЕЛ',body:'Добавьте содержание этого слайда.'});active++;render();save()};
+$('deleteSlide').onclick=()=>{if(slides.length<2)return setStatus('В презентации должен остаться хотя бы один слайд.');slides.splice(active,1);delete imageUrls[active];active=Math.max(0,active-1);render();save()};
+$('newBtn').onclick=()=>{if(!confirm('Создать новый проект? Текущая презентация будет очищена.'))return;slides=makeSlides('',8);active=0;imageUrls={};$('topic').value='';render();save();setStatus('Создан новый проект.')};
+document.querySelectorAll('.style').forEach(b=>b.onclick=()=>{document.querySelectorAll('.style').forEach(x=>x.classList.remove('active'));b.classList.add('active');style=b.dataset.style;render();save()});
+$('imageInput').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{imageUrls[active]=r.result;render();save()};r.readAsDataURL(f)};
+$('removeImage').onclick=()=>{delete imageUrls[active];render();save()};
+$('files').onchange=e=>{files=[...e.target.files];$('filelist').textContent=files.map(f=>f.name).join(' · ');setStatus(`${files.length} файл(ов) выбрано. Автоматическое чтение файлов пока не подключено.`)};
+$('drop').ondragover=e=>{e.preventDefault();$('drop').style.borderColor='var(--accent2)'};
+$('drop').ondrop=e=>{e.preventDefault();$('drop').style.borderColor='';files=[...e.dataTransfer.files];$('filelist').textContent=files.map(f=>f.name).join(' · ');setStatus(`${files.length} файл(ов) добавлено к проекту.`)};
+function save(){try{localStorage.setItem('slideainel_project',JSON.stringify({slides,active,style,topic:$('topic').value,count:$('count').value,audience:$('audience').value,notes:$('notes').value,imageUrls}))}catch(e){setStatus('Изображения слишком большие для локального сохранения. Экспорт всё ещё доступен.')}}
+function load(){try{let d=JSON.parse(localStorage.getItem('slideainel_project'));if(d){slides=d.slides||[];active=d.active||0;style=d.style||'editorial';$('topic').value=d.topic||'';$('count').value=d.count||8;$('audience').value=d.audience||$('audience').value;$('notes').value=d.notes||'';imageUrls=d.imageUrls||{};document.querySelectorAll('.style').forEach(b=>b.classList.toggle('active',b.dataset.style===style))}}catch(e){}}
+async function exportPptx(){
+ if(!slides.length)return setStatus('Сначала создай презентацию.');
+ if(typeof pptxgen==='undefined')return setStatus('Не удалось загрузить модуль PowerPoint. Проверь подключение к интернету и повтори.');
+ let pptx=new pptxgen();pptx.layout='LAYOUT_WIDE';pptx.author='SlideAInel';pptx.subject='Presentation';pptx.title=$('topic').value||'SlideAInel presentation';pptx.company='SlideAInel';
+ const themes={editorial:{bg:'F3F1EC',fg:'151515',muted:'666666',accent:'F07845'},academic:{bg:'F8FAFC',fg:'17233B',muted:'56647A',accent:'2463A6'},dark:{bg:'151923',fg:'F6F3EC',muted:'B3B6C2',accent:'F07845'},violet:{bg:'30245F',fg:'FFFFFF',muted:'D7D0FF',accent:'B5A7FF'}};
+ let c=themes[style]||themes.editorial;
+ slides.forEach((s,i)=>{let sl=pptx.addSlide();sl.background={color:c.bg};sl.addShape(pptx.ShapeType.rect,{x:0,y:0,w:.12,h:7.5,line:{color:c.accent,transparency:100},fill:{color:c.accent}});
+ sl.addShape(pptx.ShapeType.rect,{x:.72,y:1.15,w:.72,h:.055,line:{color:c.accent,transparency:100},fill:{color:c.accent}});
+ sl.addText(s.eyebrow||'',{x:.72,y:.52,w:10.8,h:.35,fontFace:'Aptos',fontSize:11,bold:true,charSpacing:2,color:c.muted,margin:0});
+ let has=!!imageUrls[i];sl.addText(s.title||'',{x:.72,y:1.55,w:has?6.4:11.2,h:1.65,fontFace:'Aptos Display',fontSize:i===0?34:30,bold:true,color:c.fg,breakLine:false,fit:'shrink',margin:0.02});
+ sl.addText(s.body||'',{x:.75,y:3.45,w:has?6.1:10.8,h:2.8,fontFace:'Aptos',fontSize:17,color:c.fg,breakLine:false,fit:'shrink',valign:'top',margin:0.02,paraSpaceAfterPt:9});
+ if(has){try{sl.addImage({data:imageUrls[i],x:8.1,y:1.55,w:4.2,h:4.8,sizingCrop:true})}catch(e){}}
+ sl.addText(String(i+1).padStart(2,'0'),{x:12.05,y:6.85,w:.5,h:.25,fontSize:10,color:c.muted,align:'right',margin:0});
+ });
+ setStatus('Формируем PowerPoint-файл…');await pptx.writeFile({fileName:'SlideAInel_presentation.pptx'});setStatus('Готово! PowerPoint скачан на устройство.');
+}
+$('exportTop').onclick=exportPptx;
+load();if(!slides.length)slides=makeSlides('',8);render();
+</script>
+</body></html>
